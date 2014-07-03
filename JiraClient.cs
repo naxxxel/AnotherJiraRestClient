@@ -1,6 +1,7 @@
 ﻿using AnotherJiraRestClient.JiraModel;
 using RestSharp;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Net;
 
 namespace AnotherJiraRestClient
@@ -286,8 +287,8 @@ namespace AnotherJiraRestClient
             var response = client.Execute(request);
             if (response.ResponseStatus != ResponseStatus.Completed || response.StatusCode != HttpStatusCode.NoContent)
                 throw new JiraApiException("Failed to delete attachment with id=" + attachmentId);
-        }        
-        
+        }
+
         /// <summary>
         /// Update time tracking estimates
         /// </summary>
@@ -295,7 +296,7 @@ namespace AnotherJiraRestClient
         /// <param name="orginialEstimateMinutes"></param>
         /// <param name="remainingEstimateMinutes"></param>
         /// <returns></returns>
-        public bool UpdateTimetracking(string issuekey, int orginialEstimateMinutes, int remainingEstimateMinutes)
+        public bool UpdateTimetracking(string issuekey, int? orginialEstimateMinutes, int? remainingEstimateMinutes)
         {
             var request = new RestRequest()
             {
@@ -309,6 +310,13 @@ namespace AnotherJiraRestClient
             //    new { fields = new { summary = issue.fields.summary } }
             //);
 
+            dynamic trackingO = new ExpandoObject();
+            if (orginialEstimateMinutes.HasValue)
+                trackingO.originalEstimate = string.Format("{0}m", orginialEstimateMinutes.Value);
+
+            if (remainingEstimateMinutes.HasValue)
+                trackingO.remainingEstimate = string.Format("{0}m", remainingEstimateMinutes.Value);
+
             request.AddBody(
                 new
                 {
@@ -316,12 +324,7 @@ namespace AnotherJiraRestClient
                     {
                         timetracking = new object[] {new
                         {
-                            edit = new
-                            {
-                                // No entry in seconds possible apparently
-                                originalEstimate = string.Format("{0}m", orginialEstimateMinutes),
-                                remainingEstimate= string.Format("{0}m", remainingEstimateMinutes)
-                            }
+                            edit = trackingO
                         }}
                     }
                 }
