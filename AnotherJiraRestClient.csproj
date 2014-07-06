@@ -43,6 +43,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="JiraModel\Transition.cs" />
+    <Compile Include="JiraModel\Transitions.cs" />
     <Compile Include="ResourceUrls.cs" />
     <Compile Include="JiraAccount.cs" />
     <Compile Include="JiraModel\ApplicationProperty.cs" />

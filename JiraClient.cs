@@ -337,5 +337,42 @@ namespace AnotherJiraRestClient
 
             return response.StatusCode == HttpStatusCode.NoContent;
         }
+
+        public Transitions GetTransitions(string issueKey)
+        {
+            var request = new RestRequest()
+            {
+                Method = Method.GET,
+                Resource = ResourceUrls.TransitionsByKey(issueKey),
+                RequestFormat = DataFormat.Json
+            };
+
+            return Execute<Transitions>(request, HttpStatusCode.OK);
+        }
+
+        public bool PerformTransition(string issueKey, string transitionId)
+        {
+            var request = new RestRequest()
+            {
+                Method = Method.POST,
+                Resource = ResourceUrls.TransitionsByKey(issueKey),
+                RequestFormat = DataFormat.Json
+            };
+
+            request.AddBody(new
+            {
+                transition = new
+                {
+                    id = transitionId
+                }
+            });
+
+            // No response expected
+            var response = client.Execute(request);
+
+            validateResponse(response);
+
+            return response.StatusCode == HttpStatusCode.NoContent;
+        }
     }
 }
