@@ -114,6 +114,7 @@ namespace AnotherJiraRestClient
         public string self { get; set; }
         public string value { get; set; }
         public string id { get; set; }
+        public customfield child { get; set; }
     }
 
     public class Subtask

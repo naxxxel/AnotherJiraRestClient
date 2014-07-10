@@ -3,6 +3,8 @@ using RestSharp;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Net;
+using System.Linq;
+using System;
 
 namespace AnotherJiraRestClient
 {
@@ -298,17 +300,6 @@ namespace AnotherJiraRestClient
         /// <returns></returns>
         public bool UpdateTimetracking(string issuekey, int? orginialEstimateMinutes, int? remainingEstimateMinutes)
         {
-            var request = new RestRequest()
-            {
-                Resource = string.Format("{0}", ResourceUrls.IssueByKey(issuekey)),
-                Method = Method.PUT,
-                RequestFormat = DataFormat.Json,
-            };
-
-            // Alternative for "simple" fields
-            //request.AddBody(
-            //    new { fields = new { summary = issue.fields.summary } }
-            //);
 
             dynamic trackingO = new ExpandoObject();
             if (orginialEstimateMinutes.HasValue)
@@ -317,25 +308,33 @@ namespace AnotherJiraRestClient
             if (remainingEstimateMinutes.HasValue)
                 trackingO.remainingEstimate = string.Format("{0}m", remainingEstimateMinutes.Value);
 
-            request.AddBody(
-                new
-                {
-                    update = new
+            object updateObject = new
                     {
                         timetracking = new object[] {new
                         {
                             edit = trackingO
                         }}
-                    }
+                    };
+
+            return PerformUpdate(issuekey, updateObject);
                 }
-                );
 
-            // No response expected
-            var response = client.Execute(request);
+        /// <summary>
+        /// Reset given fields to null values
+        /// </summary>
+        /// <param name="issuekey"></param>
+        /// <param name="orginialEstimateMinutes"></param>
+        /// <param name="remainingEstimateMinutes"></param>
+        /// <returns></returns>
+        public bool ResetFields(string issuekey, List<string> fieldNames)
+        {
+            dynamic dyno = new ExpandoObject();
 
-            validateResponse(response);
+            // Add property with "null" value
+            var dynoDic = dyno as IDictionary<string, object>;
+            fieldNames.ForEach(field => dynoDic.Add(field, null));
 
-            return response.StatusCode == HttpStatusCode.NoContent;
+            return PerformUpdate(issuekey, dyno);
         }
 
         public Transitions GetTransitions(string issueKey)
@@ -373,6 +372,102 @@ namespace AnotherJiraRestClient
             validateResponse(response);
 
             return response.StatusCode == HttpStatusCode.NoContent;
+        }
+        /// <summary>
+        /// Load only comments of an issue
+        /// </summary>
+        /// <param name="issueKey"></param>
+        /// <returns></returns>
+        public Comments GetComments(string issueKey)
+        {
+            var request = new RestRequest()
+            {
+                Method = Method.GET,
+                Resource = ResourceUrls.CommentByKey(issueKey),
+                RequestFormat = DataFormat.Json
+            };
+
+            return Execute<Comments>(request, HttpStatusCode.OK);
+        }
+
+        /// <summary>
+        /// Currnently only supports comments visible for everyone
+        /// </summary>
+        /// <param name="IssueKey"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public Comment AddComment(string issueKey, string message)
+        {
+            var request = new RestRequest()
+            {
+                Method = Method.POST,
+                Resource = ResourceUrls.CommentByKey(issueKey),
+                RequestFormat = DataFormat.Json
+            };
+
+            request.AddBody(new
+            {
+                body = message
+            });
+
+            return this.Execute<Comment>(request, HttpStatusCode.Created);
+        }
+        
+        /// <summary>
+        /// {
+        //    "update": updateobject,
+        //    "fields": fieldobject
+        //  }
+        /// </summary>
+        /// <param name="issuekey"></param>
+        /// <param name="bodyObject"></param>
+        /// <returns></returns>
+        public bool PerformUpdate(string issuekey, object fieldsObject = null, object updateObject = null)
+        {
+            if (fieldsObject == null && updateObject == null)
+                throw new ArgumentNullException("Need at least one object");
+
+            dynamic bodyObject = new ExpandoObject();
+
+            if (fieldsObject != null)
+                bodyObject.fields = fieldsObject;
+
+            if (updateObject != null)
+                bodyObject.update = updateObject;
+
+            return PerformUpdate(issuekey, bodyObject);
+        }
+        
+        /// <summary>
+        /// {
+        //    "update": updateobject,
+        //    "fields": fieldobject
+        //  }
+        /// </summary>
+        /// <param name="issuekey"></param>
+        /// <param name="bodyObject"></param>
+        /// <returns></returns>
+        public bool PerformUpdate(string issuekey, object bodyObject)
+        {
+            if (bodyObject == null)
+                throw new ArgumentNullException();
+
+            var request = new RestRequest()
+            {
+                Resource = string.Format("{0}", ResourceUrls.IssueByKey(issuekey)),
+                Method = Method.PUT,
+                RequestFormat = DataFormat.Json,
+            };
+
+            request.AddBody(bodyObject);
+
+            // No response expected
+            var response = client.Execute(request);
+
+            validateResponse(response);
+
+            // Code 204 or 200
+            return response.StatusCode == HttpStatusCode.NoContent || response.StatusCode == HttpStatusCode.OK;
         }
     }
 }

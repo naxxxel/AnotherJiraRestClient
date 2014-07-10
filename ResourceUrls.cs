@@ -56,6 +56,10 @@ namespace AnotherJiraRestClient
             return string.Format("{0}/transitions", ResourceUrls.IssueByKey(issueKey));
         }
 
+        public static string CommentByKey(string issueKey)
+        {
+            return string.Format("{0}/comment", ResourceUrls.IssueByKey(issueKey));
+        }
         private static string Url(string key)
         {
             return Path.Combine(BaseUrl, key);
