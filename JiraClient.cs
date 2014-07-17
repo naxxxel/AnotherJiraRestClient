@@ -316,8 +316,8 @@ namespace AnotherJiraRestClient
                         }}
                     };
 
-            return PerformUpdate(issuekey, updateObject);
-                }
+            return PerformUpdate(issuekey, updateObject: updateObject);
+        }
 
         /// <summary>
         /// Reset given fields to null values
@@ -412,7 +412,7 @@ namespace AnotherJiraRestClient
 
             return this.Execute<Comment>(request, HttpStatusCode.Created);
         }
-        
+
         /// <summary>
         /// {
         //    "update": updateobject,
@@ -437,7 +437,7 @@ namespace AnotherJiraRestClient
 
             return PerformUpdate(issuekey, bodyObject);
         }
-        
+
         /// <summary>
         /// {
         //    "update": updateobject,
