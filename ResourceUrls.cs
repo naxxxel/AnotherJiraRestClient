@@ -60,6 +60,27 @@ namespace AnotherJiraRestClient
         {
             return string.Format("{0}/comment", ResourceUrls.IssueByKey(issueKey));
         }
+
+        public static string VersionById(string versionId)
+        {
+            return Url(string.Format("version/{0}", versionId));
+        }
+
+        public static string IssueLink()
+        {
+            return Url("issueLink");
+        }
+
+        public static string IssueLinkType()
+        {
+            return Url("issueLinkType");
+        }
+
+        public static string Session()
+        {
+            return "/rest/auth/1/session";
+        }
+
         private static string Url(string key)
         {
             return Path.Combine(BaseUrl, key);
