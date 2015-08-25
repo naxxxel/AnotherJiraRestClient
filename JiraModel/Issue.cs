@@ -104,8 +104,9 @@ namespace AnotherJiraRestClient
         public string self { get; set; }
         public string id { get; set; }
         public string name { get; set; }
-        public string archived { get; set; }
-        public string released { get; set; }
+        public bool archived { get; set; }
+        public bool released { get; set; }
+        public string project { get; set; }
         public DateTime releaseDate { get; set; }
     }
 
@@ -115,6 +116,11 @@ namespace AnotherJiraRestClient
         public string value { get; set; }
         public string id { get; set; }
         public customfield child { get; set; }
+
+        public override string ToString()
+        {
+            return child.value;
+        }
     }
 
     public class Subtask
@@ -130,6 +136,10 @@ namespace AnotherJiraRestClient
         public int progress { get; set; }
         public int total { get; set; }
         public int percent { get; set; }
+        public override string ToString()
+        {
+            return progress.ToString();
+        }
     }
 
     public class Timetracking
@@ -140,6 +150,11 @@ namespace AnotherJiraRestClient
         public int originalEstimateSeconds { get; set; }
         public int remainingEstimateSeconds { get; set; }
         public int timeSpentSeconds { get; set; }
+
+        public override string ToString()
+        {
+            return "o: " + originalEstimate + " r: " + remainingEstimate + " s: " + timeSpent;
+        }
     }
 
     public class IssueType
@@ -150,6 +165,10 @@ namespace AnotherJiraRestClient
         public string iconUrl { get; set; }
         public string name { get; set; }
         public bool subtask { get; set; }
+        public override string ToString()
+        {
+            return name;
+        }
     }
 
     public class Votes
@@ -157,6 +176,11 @@ namespace AnotherJiraRestClient
         public string self { get; set; }
         public int votes { get; set; }
         public bool hasVoted { get; set; }
+
+        public override string ToString()
+        {
+            return votes.ToString();
+        }
     }
 
     public class Resolution
@@ -165,6 +189,11 @@ namespace AnotherJiraRestClient
         public string id { get; set; }
         public string description { get; set; }
         public string name { get; set; }
+
+        public override string ToString()
+        {
+            return name;
+        }
     }
 
     public class Watches
@@ -172,6 +201,11 @@ namespace AnotherJiraRestClient
         public string self { get; set; }
         public int watchCount { get; set; }
         public bool isWatching { get; set; }
+
+        public override string ToString()
+        {
+            return watchCount.ToString();
+        }
     }
 
     public class Worklog
@@ -202,6 +236,11 @@ namespace AnotherJiraRestClient
         public string id { get; set; }
         public string key { get; set; }
         public string name { get; set; }
+
+        public override string ToString()
+        {
+            return key + " - " + name;
+        }
     }
 
     public class Aggregateprogress
@@ -209,6 +248,11 @@ namespace AnotherJiraRestClient
         public int progress { get; set; }
         public int total { get; set; }
         public int percent { get; set; }
+
+        public override string ToString()
+        {
+            return progress.ToString();
+        }
     }
 
     public class Author
@@ -218,6 +262,10 @@ namespace AnotherJiraRestClient
         public string emailAddress { get; set; }
         public string displayName { get; set; }
         public bool active { get; set; }
+        public override string ToString()
+        {
+            return name;
+        }
     }
 
     public class Comment
@@ -245,5 +293,10 @@ namespace AnotherJiraRestClient
         public string id { get; set; }
         public string name { get; set; }
         public string description { get; set; }
+
+        public override string ToString()
+        {
+            return name;
+        }
     }
 }

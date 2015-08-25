@@ -43,6 +43,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="JiraModel\IssueLinkRequest.cs" />
+    <Compile Include="JiraModel\IssueLinkTypes.cs" />
     <Compile Include="JiraModel\Transition.cs" />
     <Compile Include="JiraModel\Transitions.cs" />
     <Compile Include="ResourceUrls.cs" />

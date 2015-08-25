@@ -300,7 +300,6 @@ namespace AnotherJiraRestClient
         /// <returns></returns>
         public bool UpdateTimetracking(string issuekey, int? orginialEstimateMinutes, int? remainingEstimateMinutes)
         {
-
             dynamic trackingO = new ExpandoObject();
             if (orginialEstimateMinutes.HasValue)
                 trackingO.originalEstimate = string.Format("{0}m", orginialEstimateMinutes.Value);
@@ -334,7 +333,7 @@ namespace AnotherJiraRestClient
             var dynoDic = dyno as IDictionary<string, object>;
             fieldNames.ForEach(field => dynoDic.Add(field, null));
 
-            return PerformUpdate(issuekey, dyno);
+            return PerformUpdate(issuekey, fieldsObject: dyno);
         }
 
         public Transitions GetTransitions(string issueKey)
@@ -373,6 +372,7 @@ namespace AnotherJiraRestClient
 
             return response.StatusCode == HttpStatusCode.NoContent;
         }
+
         /// <summary>
         /// Load only comments of an issue
         /// </summary>
@@ -468,6 +468,133 @@ namespace AnotherJiraRestClient
 
             // Code 204 or 200
             return response.StatusCode == HttpStatusCode.NoContent || response.StatusCode == HttpStatusCode.OK;
+        }
+
+        /// <summary>
+        /// Gets the version with the specified version id
+        /// </summary>
+        /// <param name="versionId"></param>
+        /// <returns></returns>
+        public fixversion GetVersion(string versionId)
+        {
+            var request = new RestRequest()
+            {
+                Resource = string.Format("{0}", ResourceUrls.VersionById(versionId)),
+                Method = Method.GET,
+                RequestFormat = DataFormat.Json,
+            };
+
+            return Execute<fixversion>(request, HttpStatusCode.OK);
+        }
+
+        /// <summary>
+        /// At least "name" and "project" need to be set
+        /// </summary>
+        /// <param name="version"></param>
+        /// <returns></returns>
+        public fixversion CreateVersion(fixversion version)
+        {
+            var request = new RestRequest()
+            {
+                Resource = string.Format("{0}", ResourceUrls.VersionById("")),
+                Method = Method.POST,
+                RequestFormat = DataFormat.Json,
+            };
+
+            request.AddBody(version);
+
+            return Execute<fixversion>(request, HttpStatusCode.Created);
+        }
+
+        /// <summary>
+        /// Deletes the version with the specified id.
+        /// Issues with this fixVersion or affectedVersion will have the version removed
+        /// </summary>
+        /// <remarks>
+        /// Could be extended in the future: /rest/api/2/version/{id}?moveFixIssuesTo&moveAffectedIssuesTo
+        /// (defaults to null => remove)
+        /// </remarks>
+        /// <param name="versionId"></param>
+        /// <returns></returns>
+        public bool DeleteVersion(string versionId)
+        {
+            var request = new RestRequest()
+            {
+                Resource = string.Format("{0}", ResourceUrls.VersionById(versionId)),
+                Method = Method.DELETE,
+                RequestFormat = DataFormat.Json,
+            };
+
+            // No response expected
+            var response = client.Execute(request);
+
+            validateResponse(response);
+
+            // Code 204
+            return response.StatusCode == HttpStatusCode.NoContent;
+        }
+
+        /// <summary>
+        /// Creates an issueLink
+        /// </summary>
+        /// <param name="link"></param>
+        /// <returns></returns>
+        public bool LinkIssues(IssueLinkRequest link)
+        {
+            var request = new RestRequest()
+            {
+                Resource = string.Format("{0}", ResourceUrls.IssueLink()),
+                Method = Method.POST,
+                RequestFormat = DataFormat.Json,
+            };
+
+            object bodyObject = link.GetAsBodyObject(); 
+
+            request.AddBody(bodyObject);
+
+            // No response content expected
+            var response = client.Execute(request);
+
+            validateResponse(response);
+
+            // Code 201 - even though API says it should be 200.
+            return response.StatusCode == HttpStatusCode.Created;
+        }
+
+        public IssueLinkTypes GetIssueLinkTypes()
+        {
+            throw new NotImplementedException("Deserialization does not work yet. Request is valid!"); // TODO
+
+            var request = new RestRequest()
+            {
+                Method = Method.GET,
+                Resource = ResourceUrls.IssueLinkType(),
+                RequestFormat = DataFormat.Json
+            };
+
+            return Execute<IssueLinkTypes>(request, HttpStatusCode.OK);
+        }
+
+        /// <summary>
+        /// Returns information about the currently authenticated user's session. If the caller is not authenticated they will get a 401 Unauthorized status code.
+        /// </summary>
+        /// <returns></returns>
+        public bool TestLogon()
+        {
+            var request = new RestRequest()
+            {
+                Method = Method.GET,
+                Resource = ResourceUrls.Session(),
+                RequestFormat = DataFormat.Json
+            };
+
+            // No response content expected
+            var response = client.Execute(request);
+
+            validateResponse(response);
+
+            // Code 200
+            return response.StatusCode == HttpStatusCode.OK;
         }
     }
 }
